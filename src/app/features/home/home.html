@@ -1,0 +1,13 @@
+<main>
+    <app-table-filter [fields]="filterFields" [values]="currentFilterValues()"
+        (filterChange)="onTableFilterChange($event)" (filterImmediateChange)="onTableFilterImmediateChange($event)"
+        (filterClear)="onFilterClear()" />
+
+    <app-base-table [data]="users()" [columns]="columns" [config]="tableConfig" [loading]="isLoading"
+        (rowClick)="onRowClick($event)" (selectionChange)="onSelectionChange($event)"
+        (sortChange)="onSortChange($event)" (pageChange)="onPageChange($event)" (editRow)="onEditUser($event)"
+        (deleteRow)="onDeleteUser($event)" (viewRow)="onViewUser($event)">
+        <ng-template #actions let-user>
+        </ng-template>
+    </app-base-table>
+</main>

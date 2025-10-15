@@ -1,0 +1,79 @@
+<div class="table-filter-container p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Filters
+        </h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (field of fields(); track field.key) {
+        <div class="filter-field" [style.width]="field.width || 'auto'">
+
+            @switch (field.type) {
+            @case ('text') {
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>{{ field.label }}</mat-label>
+                <input matInput [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.key)"
+                    (input)="onFieldChange(field.key, $any($event.target).value)" autocomplete="off" />
+                <mat-icon matPrefix>search</mat-icon>
+                @if (getFieldValue(field.key)) {
+                <button mat-icon-button matSuffix (click)="clearField(field.key)" aria-label="Clear">
+                    <mat-icon>close</mat-icon>
+                </button>
+                }
+            </mat-form-field>
+            }
+
+            @case ('select') {
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>{{ field.label }}</mat-label>
+                <mat-select [value]="getFieldValue(field.key)"
+                    (selectionChange)="onFieldChange(field.key, $event.value)">
+                    <mat-option value="">All</mat-option>
+                    @for (option of field.options || []; track option.value) {
+                    <mat-option [value]="option.value">
+                        {{ option.label }}
+                    </mat-option>
+                    }
+                </mat-select>
+                @if (getFieldValue(field.key)) {
+                <button mat-icon-button matSuffix (click)="clearField(field.key)" aria-label="Clear">
+                    <mat-icon>close</mat-icon>
+                </button>
+                }
+            </mat-form-field>
+            }
+
+            @case ('date') {
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>{{ field.label }}</mat-label>
+                <input matInput [matDatepicker]="picker" [value]="getFieldValue(field.key)"
+                    (dateChange)="onFieldChange(field.key, $event.value)" readonly />
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                @if (getFieldValue(field.key)) {
+                <button mat-icon-button matSuffix (click)="clearField(field.key)" aria-label="Clear">
+                    <mat-icon>close</mat-icon>
+                </button>
+                }
+            </mat-form-field>
+            }
+
+            @case ('number') {
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>{{ field.label }}</mat-label>
+                <input matInput type="number" [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.key)"
+                    (input)="onFieldChange(field.key, $any($event.target).value)" />
+                <mat-icon matPrefix>tag</mat-icon>
+                @if (getFieldValue(field.key)) {
+                <button mat-icon-button matSuffix (click)="clearField(field.key)" aria-label="Clear">
+                    <mat-icon>close</mat-icon>
+                </button>
+                }
+            </mat-form-field>
+            }
+            }
+        </div>
+        }
+    </div>
+</div>
