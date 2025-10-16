@@ -1,112 +1,71 @@
-<div class="base-table-container p-4 space-y-4">
-
-    <div class="table-wrapper overflow-x-auto border rounded-lg mat-elevation-z2">
-        @if (loading()) {
-        <div class="flex items-center justify-center p-12">
-            <div class="text-center space-y-4">
-                <mat-spinner diameter="48"></mat-spinner>
-                <p class="text-gray-600 dark:text-gray-400">
-                    {{ config().loadingMessage }}
-                </p>
-            </div>
-        </div>
-        } @else {
-        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="announceSortChange($event)" class="w-full"
-            [class.table-hover]="config().enableRowHover">
-            @if (config().enableSelection) {
-            <ng-container matColumnDef="select" [sticky]="true">
-                <th mat-header-cell *matHeaderCellDef class="w-12">
-                    <mat-checkbox (change)="$event ? toggleAllRows() : null"
-                        [checked]="selection.hasValue() && isAllSelected()"
-                        [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()"
-                        color="primary"></mat-checkbox>
-                </th>
-                <td mat-cell *matCellDef="let row" class="w-12">
-                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
-                        (keydown)="$event.key === 'Enter' && $event.stopPropagation()"
-                        [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)"
-                        color="primary"></mat-checkbox>
-                </td>
-            </ng-container>
-            }
-
-
-            @for (column of columns(); track column.key) {
-            @if (!column.hidden) {
-            <ng-container [matColumnDef]="column.key" [sticky]="column.sticky === 'start'"
-                [stickyEnd]="column.sticky === 'end'">
-
-                <th mat-header-cell *matHeaderCellDef
-                    [mat-sort-header]="config().enableSorting && column.sortable ? column.key : ''"
-                    [disabled]="!column.sortable" [style.width]="column.width"
-                    [style.text-align]="column.align || 'left'" class="font-semibold">
-                    {{ column.label }}
-                </th>
-
-
-                <td mat-cell *matCellDef="let row" [style.text-align]="column.align || 'left'"
-                    [ngClass]="getCellClass(row, column)">
-
-                    @if (column.cellTemplate) {
-                    <ng-container
-                        *ngTemplateOutlet="column.cellTemplate; context: { $implicit: row, value: row[column.key] }"></ng-container>
-                    } @else {
-
-                    {{ getCellValue(row, column) }}
-                    }
-                </td>
-            </ng-container>
-            }
-            }
-
-            @if (actionsTemplate()) {
-            <ng-container matColumnDef="actions" [stickyEnd]="true">
-                <th mat-header-cell *matHeaderCellDef class="w-20 text-center">Actions</th>
-                <td mat-cell *matCellDef="let row" class="w-20 text-center row-actions">
-                    <button mat-icon-button [matMenuTriggerFor]="actionMenu" (click)="$event.stopPropagation()"
-                        aria-label="Actions" matTooltip="More actions">
-                        <mat-icon>more_vert</mat-icon>
-                    </button>
-                    <mat-menu #actionMenu="matMenu">
-                        <button mat-menu-item (click)="onEditRow(row)">
-                            <mat-icon>edit</mat-icon>
-                            <span>Edit</span>
-                        </button>
-                        <button mat-menu-item (click)="onDeleteRow(row)" class="text-red-600">
-                            <mat-icon>delete</mat-icon>
-                            <span>Delete</span>
-                        </button>
-                        <button mat-menu-item (click)="onViewRow(row)">
-                            <mat-icon>visibility</mat-icon>
-                            <span>View Details</span>
-                        </button>
-                    </mat-menu>
-                </td>
-            </ng-container>
-            }
-
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: config().stickyHeader"></tr>
-
-            <tr mat-row *matRowDef="let row; columns: displayedColumns()"
-                [class.cursor-pointer]="config().enableRowClick" [class.row-selected]="selection.isSelected(row)"
-                (click)="onRowClick($event, row)" (keydown)="onRowKeydown($event, row)" tabindex="0" role="row"></tr>
-
-            <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell text-center p-12 text-gray-500" [attr.colspan]="displayedColumns().length">
-                    <div class="flex flex-col items-center gap-3">
-                        <mat-icon class="text-5xl text-gray-400">inbox</mat-icon>
-                        <p class="text-lg">{{ config().noDataMessage }}</p>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        }
-    </div>
-
-    @if (config().enablePagination && !loading() && hasData()) {
-    <mat-paginator [pageSizeOptions]="config().pageSizeOptions || [5, 10, 20, 50]"
-        [pageSize]="config().defaultPageSize || 10" [showFirstLastButtons]="config().showFirstLastButtons ?? true"
-        (page)="onPageChange($event)" aria-label="Select page" class="border-t"></mat-paginator>
+<div class="table-container mat-elevation-z2">
+  <table mat-table [dataSource]="dataSource" matSort (matSortChange)="announceSortChange($event)" class="w-full"
+    [class.table-hover]="config().enableRowHover">
+    @if (config().enableSelection) {
+    <ng-container matColumnDef="select" [sticky]="true">
+      <th mat-header-cell *matHeaderCellDef class="w-12">
+        <mat-checkbox (change)="$event ? toggleAllRows() : null" [checked]="selection.hasValue() && isAllSelected()"
+          [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()"
+          color="primary"></mat-checkbox>
+      </th>
+      <td mat-cell *matCellDef="let row" class="w-12">
+        <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
+          (keydown)="$event.key === 'Enter' && $event.stopPropagation()" [checked]="selection.isSelected(row)"
+          [aria-label]="checkboxLabel(row)" color="primary"></mat-checkbox>
+      </td>
+    </ng-container>
     }
+
+    @for (column of columns(); track column.key) {
+    @if (!column.hidden) {
+    <ng-container [matColumnDef]="column.key" [sticky]="column.sticky === 'start'"
+      [stickyEnd]="column.sticky === 'end'">
+      <th mat-header-cell *matHeaderCellDef
+        [mat-sort-header]="config().enableSorting && column.sortable ? column.key : ''" [disabled]="!column.sortable"
+        [style.width]="column.width" [style.text-align]="column.align || 'left'" class="font-semibold">
+        {{ column.label }}
+      </th>
+
+      <td mat-cell *matCellDef="let row" [style.text-align]="column.align || 'left'"
+        [ngClass]="getCellClass(row, column)">
+        @if (column.cellTemplate) {
+        <ng-container *ngTemplateOutlet="
+                  column.cellTemplate;
+                  context: { $implicit: row, value: row[column.key] }
+                "></ng-container>
+        } @else {
+        {{ getCellValue(row, column) }}
+        }
+      </td>
+    </ng-container>
+    }
+    }
+
+    @if (actionsTemplate()) {
+    <ng-container matColumnDef="actions" [stickyEnd]="true">
+      <th mat-header-cell *matHeaderCellDef class="w-20 text-center">Actions</th>
+      <td mat-cell *matCellDef="let row" class="w-20 text-center row-actions">
+        <ng-container *ngTemplateOutlet="actionsTemplate()!; context: { $implicit: row }"></ng-container>
+      </td>
+    </ng-container>
+    }
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: config().stickyHeader"></tr>
+
+    <tr mat-row *matRowDef="let row; columns: displayedColumns()" [class.cursor-pointer]="config().enableRowClick"
+      [class.row-selected]="selection.isSelected(row)" (click)="onRowClick($event, row)"
+      (keydown)="onRowKeydown($event, row)" tabindex="0" role="row"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell text-center p-12 text-gray-500" [attr.colspan]="displayedColumns().length">
+        {{ config().noDataMessage || 'No data available' }}
+      </td>
+    </tr>
+  </table>
 </div>
+
+@if (config().enablePagination && hasData()) {
+<mat-paginator [pageSizeOptions]="config().pageSizeOptions || [5, 10, 20, 50]"
+  [pageSize]="config().defaultPageSize || 10" [showFirstLastButtons]="config().showFirstLastButtons ?? true"
+  (page)="onPageChange($event)" aria-label="Select page" class="border-t"></mat-paginator>
+}

@@ -1,0 +1,67 @@
+<!-- <app-table-filter
+  [placeholder]="'Search users...'"
+  (filterChange)="tableRef.applyFilter($event)"
+/>
+
+<app-base-table
+  #tableRef
+  [data]="users"
+  [columns]="columns"
+  [config]="tableConfig"
+>
+  <ng-template #actions let-row>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+      (click)="$event.stopPropagation()"
+    >
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="onEdit(row)">
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </button>
+      <button mat-menu-item (click)="onDelete(row)">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+      <button mat-menu-item (click)="onView(row)">
+        <mat-icon>visibility</mat-icon>
+        <span>View Details</span>
+      </button>
+    </mat-menu>
+  </ng-template>
+</app-base-table> -->
+
+
+<!-- <app-base-table
+  [data]="users"
+  [columns]="columns"
+  [config]="tableConfig"
+>
+  <ng-template #actions let-row>
+    <button mat-icon-button (click)="onEdit(row)" matTooltip="Edit">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button (click)="onDelete(row)" matTooltip="Delete" color="warn">
+      <mat-icon>delete</mat-icon>
+    </button>
+    <button mat-icon-button (click)="onView(row)" matTooltip="View">
+      <mat-icon>visibility</mat-icon>
+
+    </button>
+  </ng-template>
+</app-base-table> -->
+
+
+<app-table-filter
+  (filterChange)="tableRef.applyFilter($event)"
+/>
+
+<app-base-table
+  #tableRef
+  [data]="users"
+  [columns]="columns"
+  [config]="{ enableSelection: false, enableSorting: true, enablePagination: true }"
+/>

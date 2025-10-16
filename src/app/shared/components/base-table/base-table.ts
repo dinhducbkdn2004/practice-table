@@ -9,10 +9,10 @@ import {
   input,
   computed,
   output,
-  effect,
   TemplateRef,
   contentChild,
   DestroyRef,
+  effect,
 } from '@angular/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,7 +27,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = object> {
   key: keyof T & string;
   label: string;
   sortable?: boolean;
@@ -35,23 +35,21 @@ export interface TableColumn<T = any> {
   sticky?: 'start' | 'end';
   align?: 'left' | 'center' | 'right';
   hidden?: boolean;
-  cellTemplate?: TemplateRef<any>;
-  format?: (value: any, row: T) => string;
-  cellClass?: string | ((value: any, row: T) => string);
+  cellTemplate?: TemplateRef<unknown>;
+  format?: (value: unknown, row: T) => string;
+  cellClass?: string | ((value: unknown, row: T) => string);
 }
 
 export interface TableConfig {
   enableSelection?: boolean;
   enablePagination?: boolean;
   enableSorting?: boolean;
-  enableFilter?: boolean;
   enableRowClick?: boolean;
   enableRowHover?: boolean;
   pageSizeOptions?: number[];
   defaultPageSize?: number;
   stickyHeader?: boolean;
   showFirstLastButtons?: boolean;
-  filterPlaceholder?: string;
   noDataMessage?: string;
   loadingMessage?: string;
 }
@@ -74,9 +72,8 @@ export interface TableConfig {
     MatProgressSpinnerModule,
   ],
   templateUrl: './base-table.html',
-  styleUrls: ['./base-table.css'],
 })
-export class BaseTable<T extends Record<string, any>> implements AfterViewInit {
+export class BaseTable<T extends object> implements AfterViewInit {
   private readonly liveAnnouncer = inject(LiveAnnouncer);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -95,20 +92,14 @@ export class BaseTable<T extends Record<string, any>> implements AfterViewInit {
     stickyHeader: true,
     showFirstLastButtons: true,
     noDataMessage: 'No data available',
-    loadingMessage: 'Loading...',
   });
 
-  readonly loading = input<boolean>(false);
-
-  readonly actionsTemplate = contentChild<TemplateRef<any>>('actions');
+  readonly actionsTemplate = contentChild<TemplateRef<unknown>>('actions');
 
   readonly rowClick = output<T>();
   readonly selectionChange = output<T[]>();
   readonly sortChange = output<Sort>();
   readonly pageChange = output<PageEvent>();
-  readonly editRow = output<T>();
-  readonly deleteRow = output<T>();
-  readonly viewRow = output<T>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -137,26 +128,33 @@ export class BaseTable<T extends Record<string, any>> implements AfterViewInit {
   });
 
   constructor() {
-    effect(() => {
-      const data = this.data();
-      this.dataSource.data = data;
+    this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.selectionChange.emit(this.selection.selected);
     });
 
     effect(() => {
-      this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-        this.selectionChange.emit(this.selection.selected);
-      });
+      this.dataSource.data = this.data();
     });
   }
 
   ngAfterViewInit(): void {
-    if (this.config().enablePagination && this.paginator) {
-      this.dataSource.paginator = this.paginator;
-      this.paginator.pageSize = this.config().defaultPageSize || 10;
-    }
+    queueMicrotask(() => {
+      if (this.config().enablePagination && this.paginator) {
+        this.dataSource.paginator = this.paginator;
+        this.paginator.pageSize = this.config().defaultPageSize ?? 10;
+      }
 
-    if (this.config().enableSorting && this.sort) {
-      this.dataSource.sort = this.sort;
+      if (this.config().enableSorting && this.sort) {
+        this.dataSource.sort = this.sort;
+      }
+    });
+  }
+
+  public applyFilter(filterValue: string): void {
+    this.dataSource.filter = filterValue;
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
     }
   }
 
@@ -222,20 +220,20 @@ export class BaseTable<T extends Record<string, any>> implements AfterViewInit {
   }
 
   protected getCellValue(row: T, column: TableColumn<T>): string {
-    const value = row[column.key];
+    const value = (row as Record<string, unknown>)[column.key];
 
     if (column.format) {
       return column.format(value, row);
     }
 
-    return value != null ? String(value) : '';
+    return value !== null && value !== undefined ? String(value) : '';
   }
 
   protected getCellClass(row: T, column: TableColumn<T>): string {
     if (typeof column.cellClass === 'function') {
-      return column.cellClass(row[column.key], row);
+      return column.cellClass((row as Record<string, unknown>)[column.key], row);
     }
-    return column.cellClass || '';
+    return column.cellClass ?? '';
   }
 
   protected getSelectionCount(): number {
@@ -252,17 +250,5 @@ export class BaseTable<T extends Record<string, any>> implements AfterViewInit {
 
   public refresh(): void {
     this.dataSource.data = [...this.data()];
-  }
-
-  protected onEditRow(row: T): void {
-    this.editRow.emit(row);
-  }
-
-  protected onDeleteRow(row: T): void {
-    this.deleteRow.emit(row);
-  }
-
-  protected onViewRow(row: T): void {
-    this.viewRow.emit(row);
   }
 }
